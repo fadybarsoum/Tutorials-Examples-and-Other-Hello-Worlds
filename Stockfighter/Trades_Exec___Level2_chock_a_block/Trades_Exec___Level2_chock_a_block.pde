@@ -1,3 +1,4 @@
+import g4p_controls.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -14,25 +15,33 @@ HttpClient client = new DefaultHttpClient();
 String base_url = "https://api.stockfighter.io/ob/api";
 String apikey = "3d48b1552ff058f18276a3a5d832bd2334fb71c0"; // my Stockfighter.io permanent API key (should I not make this public?)
 
-String venue = "FSWBEX"; // the stock exchange (think NYSE, NASDAQ, etc.)
-String stock = "DBML"; // the actual stock (GOOG, etc.)
+String venue = "WELBEX"; // the stock exchange (think NYSE, NASDAQ, etc.)
+String stock = "ARMI"; // the actual stock (GOOG, etc.)
 String formed_url = String.format("%s/venues/%s/stocks/%s/",base_url, venue, stock);
 
-String account = "YAS84381170"; // the account for this level
+String account = "SRB2315924"; // the account for this level
+
+int maxBuyingPrice = 4355;
 
 void setup(){
-  frameRate(0.3);
+  size(480,320);
+  frameRate(30);
+  createGUI();
+  stroke(0);
 }
 
 void draw() {
-  background(0);
-  int ask = getQuote();
-  if (ask > 100){
-    text(ask, 20,20);
-    int bid = ask - 100;
-    order250(bid);
+  background(255);
+  if (frameCount%60 == 0){
+    int ask = getQuote();
+    println("Ask: " + ask);
+    println("Max: " + maxBuyingPrice);
+    if (ask!= -1 && ask < maxBuyingPrice){
+      println("Buying!");
+      int bid = maxBuyingPrice;
+      order250(bid);
+    }
   }
-  
 }
 
 // Stackoverflow answer by Pavel Repin
@@ -50,6 +59,8 @@ int getQuote(){
     JSONObject quote = JSONObject.parse(streamToString(response.getEntity().getContent()));
     if (!quote.isNull("ask"))
       return quote.getInt("ask");
+    else
+      println(quote);
   } catch (Exception e) {
     e.printStackTrace();
   }
@@ -59,8 +70,8 @@ int getQuote(){
 void order250(int bid){
   JSONObject postContents = new JSONObject();
   postContents.setString("account", account);
-  postContents.setString("venue", venue);
-  postContents.setString("symbol", stock);
+  //postContents.setString("venue", venue);
+  //postContents.setString("symbol", stock);
   postContents.setInt("price", bid);
   postContents.setInt("qty", 250);
   postContents.setString("direction", "buy");
